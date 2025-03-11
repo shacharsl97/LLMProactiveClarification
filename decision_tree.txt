@@ -1,0 +1,19 @@
+if multiple_birth > 1:
+    if employment_months >= 12:
+        base_leave_weeks = 26
+        # Determine paid leave duration based on national insurance payments (22-month rule)
+        if payment_months_last_22 >= 15:
+            paid_leave_weeks = 15
+        else:
+            paid_leave_weeks = 0 # No entitlement for the payment
+    else:
+        base_leave_weeks = 15
+        # Determine paid leave duration based on national insurance payments (14-month rule)
+        if payment_months_last_14 >= 10:
+            paid_leave_weeks = 15
+        elif payment_months_last_14 >= 6:
+            paid_leave_weeks = 8
+        else:
+            paid_leave_weeks = 0 # No entitlement for the payment
+else:
+    paid_leave_weeks = 5

@@ -1,0 +1,50 @@
+from typing import Optional, Tuple
+def calculate_maternity_leave(employment_months: int,
+                               multiple_birth: int = 1,
+                               mother_or_baby_was_hospitalized: bool = False,
+                               payment_months_last_14: Optional[int] = None,
+                               payment_months_last_22: Optional[int] = None,
+                               partner_is_sharing_the_leave: bool = False,
+                               shortening_leave: bool = False) -> Tuple[int, int, int]:
+    """
+    Calculates the entitled maternity leave duration in weeks based on various factors.
+    Args:
+        employment_months (int): The number of months the employee has worked continuously for the same employer.
+        multiple_birth (int): Number of babies born in the same birth, default is 1.
+        mother_or_baby_was_hospitalized (bool): True if the mother or baby was hospitalized for at least 15 days, False otherwise.
+        payment_months_last_14 (int, optional): The number of months the employee paid national insurance in the last 14 months.  Required if employment_months < 12. Defaults to None.
+        payment_months_last_22 (int, optional): The number of months the employee paid national insurance in the last 22 months.  Required if employment_months >= 12. Defaults to None.
+        partner_is_sharing_the_leave (bool): True if the partner is sharing the leave, False otherwise.
+        shortening_leave (bool): True if the mother wants to shorten the leave.
+    Returns:
+        tuple: A tuple containing:
+            - total_leave_weeks (int): The total entitled maternity leave duration in weeks.
+            - paid_leave_weeks (int): The number of weeks for which maternity pay is received.
+            - unpaid_leave_weeks (int): The number of weeks for which no maternity pay is received.
+    Raises:
+        ValueError: If employment_months is negative.
+        ValueError: If payment_months_last_14 or payment_months_last_22 are not provided when required.
+    """
+
+    if multiple_birth > 1:
+        if employment_months >= 12:
+            base_leave_weeks = 26
+            # Determine paid leave duration based on national insurance payments (22-month rule)
+            if payment_months_last_22 >= 15:
+                paid_leave_weeks = 15
+            else:
+                paid_leave_weeks = 0 # No entitlement for the payment
+        else:
+            base_leave_weeks = 15
+            # Determine paid leave duration based on national insurance payments (14-month rule)
+            if payment_months_last_14 >= 10:
+                paid_leave_weeks = 15
+            elif payment_months_last_14 >= 6:
+                paid_leave_weeks = 8
+            else:
+                paid_leave_weeks = 0 # No entitlement for the payment
+    else:
+        paid_leave_weeks = 5
+    
+
+    return total_leave_weeks, paid_leave_weeks, unpaid_leave_weeks
