@@ -86,7 +86,11 @@ if __name__ == "__main__":
     with open('decision_tree.txt', 'r') as file:
         decision_tree_code = file.read()
 
-    structured_llm_prompt_format = "question to be asked based on the first conditional statement to be checked in order to determine the output of the decision tree logic? If instead, there is already enough information based on the user responses so far, set more_questions_needed to False, otherwise set it to True."
+    structured_llm_prompt_format = """
+    question to be asked based on the first conditional statement to be checked in order to determine the output of the decision tree logic?
+    If instead, there is already enough information based on the user responses so far, set more_questions_needed to False,
+    otherwise set it to True.
+    """
 
     user_responses = {}
     decision_tree_context = f"Decision tree logic in python: {decision_tree_code}"
