@@ -13,6 +13,7 @@ class DecisionTreeSession:
             f'https://generativelanguage.googleapis.com/v1beta/models/'
             f'gemini-2.0-flash:generateContent?key={api_key}'
         )
+        self.__first_question = True
         self.next_question_response = None
 
     def query_llm(self, prompt):
@@ -107,19 +108,35 @@ class DecisionTreeSession:
         """
         return self.query_llm(final_prompt)
 
+    def get_next_question(self, last_answer):
+        """
+        Returns next_question, summary.
+        next_question is None if no more questions are needed.
+        summary is None if more questions are needed.
+        """
+        if self.__first_question == True:
+            self.__first_question = False
+            next_question = self.get_initial_question()
+        else:
+            next_question = session.process_answer(last_answer)
+        if next_question["d.more_questions_needed"]:
+            return next_question["b.question"], None
+        else:
+            summary = session.get_final_summary()
+            return None, summary
 
-with open('mermaid.txt', 'r', encoding="utf-8") as file:
-    mermaid_graph = file.read()
+if __name__ == "__main__":
+    with open('mermaid.txt', 'r', encoding="utf-8") as file:
+        mermaid_graph = file.read()
 
-session = DecisionTreeSession(mermaid_graph)
-next_question = session.get_initial_question()
+    session = DecisionTreeSession(mermaid_graph)
+    next_question = session.get_initial_question()
 
-# if True:
-while next_question["d.more_questions_needed"]:
-    print(next_question["b.question"])
-    answer = input("Enter your answer: ")
-    next_question = session.process_answer(answer)
+    # if True:
+    while next_question["d.more_questions_needed"]:
+        print(next_question["b.question"])
+        answer = input("Enter your answer: ")
+        next_question = session.process_answer(answer)
 
-
-summary = session.get_final_summary()
-print(summary)
+    summary = session.get_final_summary()
+    print(summary)

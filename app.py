@@ -59,7 +59,12 @@ def main():
 
                 # Placeholder: simulate a bot response.
                 # Replace the following line with a call to your own model.
-                bot_response = chatbot.get_response(user_message)
+                next_question, answer = chatbot.get_response(user_message)
+
+                if next_question is not None:
+                    bot_response = next_question
+                else:
+                    bot_response = answer
                 st.session_state.messages.append(("bot", bot_response))
 
                 # Rerun to update the UI
