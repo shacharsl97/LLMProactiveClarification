@@ -1,19 +1,110 @@
-if multiple_birth > 1:
-    if employment_months >= 12:
-        base_leave_weeks = 26
-        # Determine paid leave duration based on national insurance payments (22-month rule)
-        if payment_months_last_22 >= 15:
-            paid_leave_weeks = 15
-        else:
-            paid_leave_weeks = 0 # No entitlement for the payment
+python
+def calculate_maternity_leave_entitlement(employment_duration_months, multiple_birth, hospitalized, partner_sharing, insurance_paid_months):
+    """
+    Calculates the number of weeks of maternity leave an employee is entitled to after birth,
+    considering various factors such as employment duration, multiple births, hospitalization,
+    and partner sharing leave.
+    Args:
+        employment_duration_months (int): The duration of employment in months with the current employer.
+        multiple_birth (bool): True if the birth was a multiple birth (e.g., twins, triplets), False otherwise.
+        hospitalized (bool): True if the mother or the baby was hospitalized for at least 15 days during or immediately after the standard leave period, False otherwise.
+        partner_sharing (bool): True if the partner is sharing the leave, False otherwise.
+        insurance_paid_months (int): The amount of months the employee paid for national insurance (Bituah Leumi).
+    Returns:
+        int: The total number of weeks of maternity leave the employee is entitled to.
+    """
+    base_leave = 0  # Initialize base leave duration
+    # Determine base leave duration based on employment duration
+    if employment_duration_months >= 12:
+        # Employees who have worked for at least 12 months are entitled to 26 weeks of leave.
+        base_leave = 26
     else:
-        base_leave_weeks = 15
-        # Determine paid leave duration based on national insurance payments (14-month rule)
-        if payment_months_last_14 >= 10:
-            paid_leave_weeks = 15
-        elif payment_months_last_14 >= 6:
-            paid_leave_weeks = 8
+        # Employees who have worked for less than 12 months are entitled to 15 weeks of leave.
+        base_leave = 15
+    total_leave = base_leave # Initialize the total leave to be the base leave
+    # Add additional weeks for multiple births
+    if multiple_birth:
+        #For each additional baby born, the leave can be extended by 3 weeks per baby
+        additional_babies = 2 # assuming that multiple_birth implies twins at minimum
+        if base_leave == 26:
+            total_leave += (additional_babies - 1) * 3
         else:
-            paid_leave_weeks = 0 # No entitlement for the payment
-else:
-    paid_leave_weeks = 5
+            total_leave += (additional_babies - 1) * 3 # same as above
+    # Add additional leave in case of hospitalization of the mother or baby
+    if hospitalized:
+        # In the case that the mother or baby stay hospitalized, the leave may be extended.
+        # Since we don't know the duration, we will not modify the number.
+        # For details of the leave's duration, one should check specific details in "הארכת חופשת לידה בשל אשפוז של היולדת או של התינוק."
+        pass  # No calculation needed, but keeping this to acknowledge the possibility
+    if partner_sharing:
+        # if partner is sharing the leave we have to consider the duration and insurance
+        if base_leave == 26:
+            # the mother can shorten her leave to 15 weeks, and the partner can fill in
+            # we can't calculate this because it depends on the mother's decision.
+            pass
+        if base_leave == 15:
+            # if the insurance paid is for 15 weeks, and the partner is sharing, the mother can return to work and give the insurance to the partner for the last week
+            pass
+            # if the insurance paid is for 8 weeks, the mother can't shorten her leave.
+    return total_leave
+# Example usage scenarios:
+# Scenario 1: Employee worked for 1.5 years, single birth, no hospitalization, no partner sharing
+employment_duration = 18  # months
+multiple_birth_event = False
+hospitalization_event = False
+partner_share = False
+insurance_paid = 15
+leave_entitlement = calculate_maternity_leave_entitlement(employment_duration, multiple_birth_event, hospitalization_event, partner_share, insurance_paid)
+print(f"Scenario 1: Maternity leave entitlement: {leave_entitlement} weeks")
+# Expected output: Maternity leave entitlement: 26 weeks
+# Scenario 2: Employee worked for 6 months, single birth, no hospitalization, no partner sharing
+employment_duration = 6  # months
+multiple_birth_event = False
+hospitalization_event = False
+partner_share = False
+insurance_paid = 8
+leave_entitlement = calculate_maternity_leave_entitlement(employment_duration, multiple_birth_event, hospitalization_event, partner_share, insurance_paid)
+print(f"Scenario 2: Maternity leave entitlement: {leave_entitlement} weeks")
+# Expected output: Maternity leave entitlement: 15 weeks
+# Scenario 3: Employee worked for 2 years, twins, no hospitalization, no partner sharing
+employment_duration = 24  # months
+multiple_birth_event = True
+hospitalization_event = False
+partner_share = False
+insurance_paid = 15
+leave_entitlement = calculate_maternity_leave_entitlement(employment_duration, multiple_birth_event, hospitalization_event, partner_share, insurance_paid)
+print(f"Scenario 3: Maternity leave entitlement: {leave_entitlement} weeks")
+# Expected output: Maternity leave entitlement: 29 weeks
+# Scenario 4: Employee worked for 10 months, single birth, hospitalization, no partner sharing
+employment_duration = 10  # months
+multiple_birth_event = False
+hospitalization_event = True
+partner_share = False
+insurance_paid = 8
+leave_entitlement = calculate_maternity_leave_entitlement(employment_duration, multiple_birth_event, hospitalization_event, partner_share, insurance_paid)
+print(f"Scenario 4: Maternity leave entitlement: {leave_entitlement} weeks")
+# Expected output: Maternity leave entitlement: 15 weeks
+# Scenario 5: Employee worked for 1.5 years, single birth, no hospitalization, partner sharing
+employment_duration = 18  # months
+multiple_birth_event = False
+hospitalization_event = False
+partner_share = True
+insurance_paid = 15
+leave_entitlement = calculate_maternity_leave_entitlement(employment_duration, multiple_birth_event, hospitalization_event, partner_share, insurance_paid)
+print(f"Scenario 5: Maternity leave entitlement: {leave_entitlement} weeks")
+# Scenario 6: Employee worked for 1.5 years, single birth, no hospitalization, partner sharing, insurance paid for 6 months
+employment_duration = 18  # months
+multiple_birth_event = False
+hospitalization_event = False
+partner_share = True
+insurance_paid = 6
+leave_entitlement = calculate_maternity_leave_entitlement(employment_duration, multiple_birth_event, hospitalization_event, partner_share, insurance_paid)
+print(f"Scenario 6: Maternity leave entitlement: {leave_entitlement} weeks")
+# Scenario 7: Employee worked for 6 months, single birth, no hospitalization, partner sharing
+employment_duration = 6  # months
+multiple_birth_event = False
+hospitalization_event = False
+partner_share = True
+insurance_paid = 8
+leave_entitlement = calculate_maternity_leave_entitlement(employment_duration, multiple_birth_event, hospitalization_event, partner_share, insurance_paid)
+print(f"Scenario 7: Maternity leave entitlement: {leave_entitlement} weeks")

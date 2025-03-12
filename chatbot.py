@@ -82,9 +82,32 @@ def ask_question(question):
     print(question)
     return input("Your answer: ")
 
+def clean_code(code):
+    # Remove all lines of code before the first if statement and after the last else statement
+    code_lines = code.split("\n")
+    start_index = -1
+    end_index = -1
+    for i, line in enumerate(code_lines):
+        if "if" in line:
+            start_index = i
+            break
+    for i, line in enumerate(code_lines):
+        if "else" in line:
+            end_index = i
+    return "\n".join(code_lines[start_index:end_index])
+
+def parse_json_response(response):
+    # Take only the output part of the response
+    response = response.split("<output>")[1].split("</output>")[0]
+
+    # Convert the response to a JSON object
+    response = json.loads(response)[0]
+
+    return response
+
 if __name__ == "__main__":
-    with open('decision_tree.txt', 'r') as file:
-        decision_tree_code = file.read()
+    with open('decision_tree.txt', 'r', encoding="utf-8") as file:
+        decision_tree_code = clean_code(file.read())
 
     structured_llm_prompt_format = """
     question to be asked based on the first conditional statement to be checked in order to determine the output of the decision tree logic?
@@ -111,7 +134,7 @@ if __name__ == "__main__":
     initial_prompt = f"What is the first {structured_llm_prompt_format}\n{decision_tree_context}"
     # Provide your reasoning first, then the question as a natural human sentence, followed by another dollar sign and then the corresponding field name from the decision tree. Format: reasoning$question$field_name. So you must have exactly 2 dollar signs in your output.
     # next_question_response = query_llm_structured(initial_prompt)
-    next_question_response = query_llm(initial_prompt)
+    next_question_response = parse_json_response(query_llm(initial_prompt))
     print(f"initial_prompt: {initial_prompt}, \nnext_question_response: {next_question_response}")
 
     while next_question_response["d.more_questions_needed"]:
@@ -123,7 +146,7 @@ if __name__ == "__main__":
         next_prompt = f"Given the user's answers so far, what is the next {structured_llm_prompt_format}\n{decision_tree_context}"
         
         # next_question_response = query_llm_structured(next_prompt)
-        next_question_response = query_llm(next_prompt)
+        next_question_response = parse_json_response(query_llm(next_prompt))
 
         print(f"Next prompt: {next_prompt}, \nnext_question_response: {next_question_response}")
 
