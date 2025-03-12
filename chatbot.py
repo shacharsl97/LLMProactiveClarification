@@ -90,13 +90,28 @@ if __name__ == "__main__":
     question to be asked based on the first conditional statement to be checked in order to determine the output of the decision tree logic?
     If instead, there is already enough information based on the user responses so far, set more_questions_needed to False,
     otherwise set it to True.
+
+    Present your final output as a JSON array within <output> tags, like this:
+
+    <output>
+    [
+    {{
+        "a.reasoning": "Reasoning towards determining the question, field_name and whether more questions are needed",
+        "b.question": "The question to be asked based on the user responses so far, if needed",
+        "c.field_name": "The field name for the question to be asked, if needed",
+        "d.more_questions_needed": "True or False based on whether more questions are needed"
+    }},
+    ...
+    ]
+    </output>
     """
 
     user_responses = {}
     decision_tree_context = f"Decision tree logic in python: {decision_tree_code}"
     initial_prompt = f"What is the first {structured_llm_prompt_format}\n{decision_tree_context}"
     # Provide your reasoning first, then the question as a natural human sentence, followed by another dollar sign and then the corresponding field name from the decision tree. Format: reasoning$question$field_name. So you must have exactly 2 dollar signs in your output.
-    next_question_response = query_llm_structured(initial_prompt)
+    # next_question_response = query_llm_structured(initial_prompt)
+    next_question_response = query_llm(initial_prompt)
     print(f"initial_prompt: {initial_prompt}, \nnext_question_response: {next_question_response}")
 
     while next_question_response["d.more_questions_needed"]:
@@ -107,7 +122,8 @@ if __name__ == "__main__":
         decision_tree_context = f"Decision tree logic in python: {decision_tree_code}\nUser responses so far: {json.dumps(user_responses)}"
         next_prompt = f"Given the user's answers so far, what is the next {structured_llm_prompt_format}\n{decision_tree_context}"
         
-        next_question_response = query_llm_structured(next_prompt)
+        # next_question_response = query_llm_structured(next_prompt)
+        next_question_response = query_llm(next_prompt)
 
         print(f"Next prompt: {next_prompt}, \nnext_question_response: {next_question_response}")
 
