@@ -1,21 +1,23 @@
 from clarifier import DecisionTreeSession
+from profiler import GeminiProfiler
+from question_solver import solve_question
 
 class Chatbot(object):
-    def __init__(self):
-        self.__profiler = None
+    def __init__(self, language, doc):
+        self.__language = language
+        self.__doc = doc
+        self.__user_question = None
+        self.__profiler = GeminiProfiler(language)
         self.__clarifier = None
-        self.__question_solver = None
-
-        self.__init_all = True
 
     def get_response(self, user_message):
-        if self.__init_all:
-            self.__init_all = False
-            mermaid_graph = None
-            self.__clarifier = DecisionTreeSession(mermaid_graph)
+        if self.__clarifier is None:
+            self.__user_question = user_message
+            mermaid_graph = self.__profiler.ask_llm(self.__user_question, self.__doc)
+            self.__clarifier = DecisionTreeSession(mermaid_graph, self.__language)
 
         current_question, summary = self.__clarifier.get_next_question(user_message)
         if summary is None:
             return current_question, None
         else:
-            return None, self.__question_solver(summary)
+            return None, solve_question(self.__user_question, summary, self.__doc, self.__language)

@@ -1,17 +1,16 @@
 import requests
 import json
-from google import genai
 
 class DecisionTreeSession:
-    def __init__(self, mermaid_graph):
-        with open('../api_key.env', 'r') as file:
-            api_key = file.read().replace('\n', '')
-        self.api_key = api_key
+    def __init__(self, mermaid_graph, language):
+        with open('../gemini_api_key.env', 'r') as file:
+            self.api_key = file.read().replace('\n', '')
         self.mermaid_graph = mermaid_graph
+        self.language = language
         self.user_responses = {}
         self.LLM_URL = (
             f'https://generativelanguage.googleapis.com/v1beta/models/'
-            f'gemini-2.0-flash:generateContent?key={api_key}'
+            f'gemini-2.0-flash:generateContent?key={self.api_key}'
         )
         self.__first_question = True
         self.next_question_response = None
@@ -44,6 +43,7 @@ class DecisionTreeSession:
         initial_prompt = f"""
         Determine the first question based on the mermaid graph.
         If there is already enough information, set more_questions_needed to False, otherwise set it to True.
+        The question must be in {self.language}.
 
         <output>
         [
@@ -72,6 +72,7 @@ class DecisionTreeSession:
         next_prompt = f"""
         Given the user's answers so far, determine the next question.
         If there is already enough information, set more_questions_needed to False.
+        The question must be in {self.language}.
 
         <output>
         [
@@ -97,7 +98,7 @@ class DecisionTreeSession:
     def get_final_summary(self):
         final_prompt = f"""
         Summarize the user responses to a short description.
-        The summary must be in Hebrew.
+        The summary must be in {self.language}.
         Don't mention the field names, only relate to the meaning of the user responses.
 
         User responses:
@@ -118,18 +119,18 @@ class DecisionTreeSession:
             self.__first_question = False
             next_question = self.get_initial_question()
         else:
-            next_question = session.process_answer(last_answer)
+            next_question = self.process_answer(last_answer)
         if next_question["d.more_questions_needed"]:
             return next_question["b.question"], None
         else:
-            summary = session.get_final_summary()
+            summary = self.get_final_summary()
             return None, summary
 
 if __name__ == "__main__":
     with open('mermaid.txt', 'r', encoding="utf-8") as file:
         mermaid_graph = file.read()
 
-    session = DecisionTreeSession(mermaid_graph)
+    session = DecisionTreeSession(mermaid_graph, "Hebrew")
     next_question = session.get_initial_question()
 
     # if True:
